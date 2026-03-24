@@ -7,6 +7,7 @@ from routes_nodes import router as nodes_router
 from routes_files import router as files_router
 from routes_policy import router as policy_router
 from routes_audit import router as audit_router
+from routes_access import router as access_router
 
 
 app = FastAPI(
@@ -30,6 +31,7 @@ app.include_router(nodes_router)
 app.include_router(files_router)
 app.include_router(policy_router)
 app.include_router(audit_router)
+app.include_router(access_router)
 
 
 # ------------------------
