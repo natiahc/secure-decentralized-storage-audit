@@ -8,13 +8,9 @@ from schemas import StorageNodeRegister, StorageNodeResponse
 router = APIRouter(prefix="/nodes", tags=["nodes"])
 
 
-# ------------------------
-# Register Storage Node
-# ------------------------
 @router.post("/register", response_model=StorageNodeResponse)
 def register_node(node: StorageNodeRegister, db: Session = Depends(get_db)):
     existing = db.query(StorageNode).filter(StorageNode.id == node.id).first()
-
     if existing:
         raise HTTPException(status_code=400, detail="Node already exists")
 
@@ -22,7 +18,8 @@ def register_node(node: StorageNodeRegister, db: Session = Depends(get_db)):
         id=node.id,
         name=node.name,
         region=node.region,
-        url=node.url
+        url=node.url,
+        is_active=True,
     )
 
     db.add(new_node)
@@ -32,10 +29,11 @@ def register_node(node: StorageNodeRegister, db: Session = Depends(get_db)):
     return new_node
 
 
-# ------------------------
-# List Storage Nodes
-# ------------------------
 @router.get("/", response_model=list[StorageNodeResponse])
 def list_nodes(db: Session = Depends(get_db)):
-    nodes = db.query(StorageNode).filter(StorageNode.is_active == True).all()
-    return nodes
+    return (
+        db.query(StorageNode)
+        .filter(StorageNode.is_active == True)
+        .order_by(StorageNode.id.asc())
+        .all()
+    )
