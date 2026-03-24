@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from passlib.context import CryptContext
@@ -12,19 +13,12 @@ import os
 from database import get_db
 from models import User
 
-
-# ------------------------
-# Config
-# ------------------------
 SECRET_KEY = os.getenv("JWT_SECRET", "supersecretkey")
 ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
 
-
-# ------------------------
-# Password hashing
-# ------------------------
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 def hash_password(password: str):
@@ -35,25 +29,16 @@ def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
 
 
-# ------------------------
-# JWT Token
-# ------------------------
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
-
     expire = datetime.utcnow() + (
         expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
-
     to_encode.update({"exp": expire})
-
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
-# ------------------------
-# User Registration
-# ------------------------
 def register_user(db: Session, username: str, password: str):
     existing = db.query(User).filter(User.username == username).first()
     if existing:
@@ -71,9 +56,6 @@ def register_user(db: Session, username: str, password: str):
     return user
 
 
-# ------------------------
-# User Authentication
-# ------------------------
 def authenticate_user(db: Session, username: str, password: str):
     user = db.query(User).filter(User.username == username).first()
     if not user:
@@ -85,10 +67,10 @@ def authenticate_user(db: Session, username: str, password: str):
     return user
 
 
-# ------------------------
-# Get current user
-# ------------------------
-def get_current_user(token: str, db: Session = Depends(get_db)):
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid authentication",
