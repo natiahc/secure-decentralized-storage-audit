@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 from database import Base, engine
+from routes_auth import router as auth_router
+
+app.include_router(auth_router)
 
 app = FastAPI(
     title="Secure Decentralized Storage Control Server",
