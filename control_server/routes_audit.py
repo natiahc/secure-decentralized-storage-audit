@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from auth import get_current_user
 from database import get_db
 from models import AuditLog, FileMetadata, User
-from auth import get_current_user
 
 router = APIRouter(prefix="/audit", tags=["audit"])
 
@@ -29,29 +29,28 @@ def get_file_audit_logs(
         .all()
     )
 
-    result = []
-    for log in logs:
-        result.append({
-            "audit_id": str(log.id),
-            "user_id": str(log.user_id) if log.user_id else None,
-            "file_id": str(log.file_id) if log.file_id else None,
-            "action": log.action,
-            "node_id": log.node_id,
-            "timestamp": log.timestamp,
-            "success": log.success,
-            "reason": log.reason,
-            "ip_address": log.ip_address,
-        })
-
     return {
         "file_id": str(file.id),
         "filename": file.filename,
-        "audit_logs": result,
+        "audit_logs": [
+            {
+                "audit_id": str(log.id),
+                "user_id": str(log.user_id) if log.user_id else None,
+                "file_id": str(log.file_id) if log.file_id else None,
+                "action": log.action,
+                "node_id": log.node_id,
+                "timestamp": log.timestamp,
+                "success": log.success,
+                "reason": log.reason,
+                "ip_address": log.ip_address,
+            }
+            for log in logs
+        ],
     }
 
 
 @router.get("/me")
-def get_my_audit_activity(
+def get_my_activity(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -62,21 +61,20 @@ def get_my_audit_activity(
         .all()
     )
 
-    result = []
-    for log in logs:
-        result.append({
-            "audit_id": str(log.id),
-            "file_id": str(log.file_id) if log.file_id else None,
-            "action": log.action,
-            "node_id": log.node_id,
-            "timestamp": log.timestamp,
-            "success": log.success,
-            "reason": log.reason,
-            "ip_address": log.ip_address,
-        })
-
     return {
         "user_id": str(current_user.id),
         "username": current_user.username,
-        "activity": result,
+        "activity": [
+            {
+                "audit_id": str(log.id),
+                "file_id": str(log.file_id) if log.file_id else None,
+                "action": log.action,
+                "node_id": log.node_id,
+                "timestamp": log.timestamp,
+                "success": log.success,
+                "reason": log.reason,
+                "ip_address": log.ip_address,
+            }
+            for log in logs
+        ],
     }
