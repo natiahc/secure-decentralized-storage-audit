@@ -1,13 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
-from database import get_db
-from models import FileMetadata, FileChunk, StorageNode, User
-from schemas import FileCreate, FileResponse
 from auth import get_current_user
-
 from audit import write_audit_log
-from fastapi import Request
+from database import get_db
+from models import FileChunk, FileMetadata, StorageNode, User
+from schemas import FileCreate, FileResponse
 
 router = APIRouter(prefix="/files", tags=["files"])
 
@@ -25,8 +23,7 @@ def select_storage_node(db: Session, preferred_region: str | None = None):
         if node:
             return node
 
-    node = db.query(StorageNode).filter(StorageNode.is_active == True).first()
-    return node
+    return db.query(StorageNode).filter(StorageNode.is_active == True).first()
 
 
 @router.post("/metadata")
@@ -63,6 +60,7 @@ def create_file_metadata(
 
     db.add(chunk)
     db.commit()
+    db.refresh(chunk)
 
     write_audit_log(
         db=db,
@@ -76,6 +74,7 @@ def create_file_metadata(
     )
 
     return {
+        "message": "File metadata created successfully",
         "file_id": str(new_file.id),
         "filename": new_file.filename,
         "assigned_node": {
