@@ -6,6 +6,9 @@ from models import FileMetadata, FileChunk, StorageNode, User
 from schemas import FileCreate, FileResponse
 from auth import get_current_user
 
+from audit import write_audit_log
+from fastapi import Request
+
 router = APIRouter(prefix="/files", tags=["files"])
 
 
@@ -29,6 +32,7 @@ def select_storage_node(db: Session, preferred_region: str | None = None):
 @router.post("/metadata")
 def create_file_metadata(
     file: FileCreate,
+    request: Request,
     region: str | None = Query(default=None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -59,6 +63,17 @@ def create_file_metadata(
 
     db.add(chunk)
     db.commit()
+
+    write_audit_log(
+        db=db,
+        user_id=current_user.id,
+        file_id=new_file.id,
+        action="upload_metadata",
+        node_id=node.id,
+        success=True,
+        reason="File metadata created",
+        ip_address=request.client.host if request.client else None,
+    )
 
     return {
         "file_id": str(new_file.id),
