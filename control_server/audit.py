@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-
+from typing import Optional
 from models import AuditLog
 
 
@@ -8,10 +8,10 @@ def write_audit_log(
     user_id,
     file_id,
     action: str,
-    node_id: str | None = None,
+    node_id: Optional[str] = None,
     success: bool = True,
-    reason: str | None = None,
-    ip_address: str | None = None,
+    reason: Optional[str] = None,
+    ip_address: Optional[str] = None,
 ):
     log = AuditLog(
         user_id=user_id,
