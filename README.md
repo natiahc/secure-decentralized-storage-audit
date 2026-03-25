@@ -1,5 +1,12 @@
 # Secure Decentralized File Storage with Access Auditing
 
+| Name           | Roll No   | Email                                               |
+| -------------- | --------- | --------------------------------------------------- |
+| Pradip Solanki | m25ai2016 | [m25ai2016@iitj.ac.in](mailto:m25ai2016@iitj.ac.in) |
+| Chaitan Divagi | m25ai2089 | [m25ai2089@iitj.ac.in](mailto:m25ai2089@iitj.ac.in) |
+| Sanjeev Jadon  | m25ai2025 | [m25ai2025@iitj.ac.in](mailto:m25ai2025@iitj.ac.in) |
+
+
 ## 📌 Overview
 
 This project implements a **secure decentralized file storage system** with **policy-based access control** and **comprehensive audit logging**.
