@@ -75,35 +75,33 @@ This ensures:
 - full traceability
 
 ---
-
 ## 🗂️ Folder Structure
+
+```plaintext
 secure-decentralized-storage-audit/
-│
 ├── docker-compose.yml
 │
 ├── control_server/
-│ ├── Dockerfile
-│ ├── requirements.txt
-│ ├── main.py
-│ ├── database.py
-│ ├── models.py
-│ ├── schemas.py
-│ ├── auth.py
-│ ├── audit.py
-│ ├── routes_auth.py
-│ ├── routes_nodes.py
-│ ├── routes_files.py
-│ ├── routes_policy.py
-│ ├── routes_audit.py
-│ ├── routes_access.py
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── main.py
+│   ├── database.py
+│   ├── models.py
+│   ├── schemas.py
+│   ├── auth.py
+│   ├── audit.py
+│   ├── routes_auth.py
+│   ├── routes_nodes.py
+│   ├── routes_files.py
+│   ├── routes_policy.py
+│   ├── routes_audit.py
+│   └── routes_access.py
 │
 ├── storage_node/
-│ ├── Dockerfile
-│ ├── requirements.txt
-│ ├── main.py
-
-
----
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   └── main.py
+```
 
 ## 🧩 Database Schema
 
@@ -226,23 +224,28 @@ curl -X GET http://localhost:8000/audit/file/<FILE_ID> \
 -H "Authorization: Bearer <TOKEN>"
 ```
 
-## Example Flows:
-### User registers and logs in
-### Storage nodes are registered
-### User creates file metadata
-### File is assigned to a node
-### Owner shares file via policy
-### Another user requests access
-### Access is allowed/denied
-### Audit log is recorded
+## 🔄 Example Flows
+
+- User registers and logs in  
+- Storage nodes are registered  
+- User creates file metadata  
+- File is assigned to a node  
+- Owner shares file via policy  
+- Another user requests access  
+- Access is allowed/denied  
+- Audit log is recorded  
 
 
-## Decentralization Model
-### This system follows a hybrid decentralized architecture:
-### File data → decentralized across nodes
-### Metadata & policies → centralized control plane
-### This provides:
-#### scalability
-#### strong governance
-#### auditability
-#### regulatory complianc
+## 🏗️ Decentralization Model
+
+This system follows a **hybrid decentralized architecture**:
+
+- **File data** → decentralized across storage nodes  
+- **Metadata & policies** → centralized control plane  
+
+### Benefits
+
+- Scalability  
+- Strong governance  
+- Auditability  
+- Regulatory compliance  
