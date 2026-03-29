@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Decentralized Storage (DHT)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Decentralized Storage System</h1>
+
+<div class="container">
+
+    <!-- COLUMN 1 -->
+    <div class="column">
+        <div class="card">
+            <h2>Upload File</h2>
+            <input type="file" id="fileInput">
+            <button onclick="uploadFile()">Upload</button>
+        </div>
+
+        <div class="card">
+            <h2>Download File</h2>
+            <input type="text" id="fileId" placeholder="Enter File ID">
+            <button onclick="downloadFile()">Download</button>
+        </div>
+    </div>
+
+    <!-- COLUMN 2 -->
+    <div class="column">
+        <div class="card">
+            <h2>Node Distribution</h2>
+            <button onclick="loadStatus()">Refresh</button>
+            <pre id="statusOutput"></pre>
+        </div>
+    </div>
+
+    <!-- COLUMN 3 -->
+    <div class="column">
+        <div class="card">
+            <h2>Audit Logs</h2>
+            <button onclick="loadAudit()">Load Logs</button>
+            <pre id="auditOutput"></pre>
+        </div>
+    </div>
+
+    <!-- COLUMN 4 -->
+    <div class="column">
+        <div class="card">
+            <h2>System Output</h2>
+            <pre id="output"></pre>
+        </div>
+    </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
