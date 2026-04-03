@@ -8,7 +8,6 @@ from audit import AuditLog
 from jurisdiction import Jurisdiction
 from config import NodeConfig
 from dht import DHT
-from shared.hashing import sha256_hash
 
 app = FastAPI()
 
@@ -56,8 +55,22 @@ async def store_chunk(
         f"chunk={chunk_id} size={len(data)} region={region}"
     )
 
-    storage.store_chunk(chunk_id, data)
+    # Enforce jurisdiction policy
+    if region and not jurisdiction.is_allowed(region):
+        print(
+            f"[JURISDICTION-DENY] node={self_node['node_id']} "
+            f"node_region={jurisdiction.get_region()} required={region}"
+        )
+        return JSONResponse(
+            content={
+                "error": "jurisdiction_violation",
+                "node_region": jurisdiction.get_region(),
+                "required_region": region
+            },
+            status_code=403
+        )
 
+    storage.store_chunk(chunk_id, data)
     audit.log_event("STORE", f"{chunk_id} at {self_node['node_id']}")
 
     return {
