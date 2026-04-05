@@ -1,3 +1,4 @@
+import os
 import requests
 
 from shared.chunker import split_file, merge_chunks
@@ -11,7 +12,7 @@ NODE_URLS = [
     "http://node3:5003",
 ]
 
-REGION_POLICY = "IN"
+REGION_POLICY = os.getenv('REGION_POLICY', 'IN')
 
 _node_cache = None
 
