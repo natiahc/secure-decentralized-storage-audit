@@ -7,252 +7,362 @@
 | Sanjeev Jadon  | m25ai2025 | [m25ai2025@iitj.ac.in](mailto:m25ai2025@iitj.ac.in) |
 
 
-## 📌 Overview
+## 📌 Project Overview
 
-This project implements a **secure decentralized file storage system** with **policy-based access control** and **comprehensive audit logging**.
+This project implements a **decentralized file storage system** designed to address key challenges in modern cloud computing:
 
-In decentralized environments, file data may reside across multiple storage nodes, making it difficult to:
-- enforce access control
-- track data location (data sovereignty)
-- provide auditability for compliance (GDPR, HIPAA)
+* **Data sovereignty**
+* **Auditability**
+* **Decentralized storage**
+* **Fault tolerance**
 
-This system addresses these challenges by separating:
-- **Data Plane (Decentralized Storage)**
-- **Control Plane (Centralized Metadata + Policy + Audit)**
+In traditional cloud systems, data is centrally stored, making it difficult to ensure:
+
+* where data resides
+* who accessed it
+* whether it has been tampered with
+
+This system solves these issues by distributing file storage across multiple independent nodes using a **Distributed Hash Table (DHT)** and adding **cryptographic audit mechanisms**.
 
 ---
 
 ## 🎯 Objectives
 
-- Store encrypted file data across multiple storage nodes
-- Maintain metadata separately from file content
-- Enforce policy-based access control
-- Track all access via audit logs
-- Support region-aware storage (data sovereignty)
+* Eliminate centralized storage dependency
+* Enable **jurisdiction-aware data placement**
+* Provide **tamper-evident audit logs**
+* Ensure **data integrity using Merkle trees**
+* Simulate **real-world compliance requirements (GDPR, HIPAA)**
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ System Architecture
 
-### 🔹 Control Plane (Centralized)
+The system follows a distributed architecture:
 
-Responsible for:
-- Authentication (JWT)
-- User management
-- File metadata
-- Access policies
-- Audit logging
-- Storage node registry
+```
+Frontend (Dashboard UI)
+        ↓
+Gateway (Client API)
+        ↓
+----------------------------------
+|        |         |              |
+Node1   Node2     Node3       ... Nodes
+(IN)     (EU)      (US)
+```
 
-Tech:
-- FastAPI
-- PostgreSQL
-- SQLAlchemy
+### Components:
+
+* **Frontend**
+
+  * User interface for upload/download
+  * Displays node distribution and audit logs
+
+* **Gateway**
+
+  * Entry point for client requests
+  * Splits files into chunks
+  * Coordinates upload/download
+
+* **Nodes (Peers)**
+
+  * Store file chunks
+  * Maintain audit logs
+  * Participate in DHT routing
+
+* **Network Layer**
+
+  * Node discovery (`registry`)
+  * Metadata distribution (`gossip`)
+
+---
+
+## ⚙️ Core Technologies
+
+* Python
+* FastAPI
+* Docker & Docker Compose
+* REST APIs
+* SHA-256 hashing
+* Distributed Hash Table (DHT)
 
 ---
 
-### 🔹 Data Plane (Decentralized)
+## 🔑 Key Features
 
-Responsible for:
-- Storing encrypted file blobs
-- File retrieval
-- File deletion
+### 1. Decentralized Storage
 
-Each storage node runs independently.
-
----
-
-### 🔹 Client / API User
-
-- Uploads file metadata
-- Uploads encrypted file to storage node
-- Requests access
-- Receives storage location
+* Files are split into chunks
+* Each chunk is stored on different nodes
+* No single node has the entire file
 
 ---
 
-## 🧠 Key Design Principle
+### 2. Distributed Hash Table (DHT)
 
-> File data is decentralized, while metadata, policy, and audit are centralized.
-
-This ensures:
-- scalability
-- compliance
-- strong access control
-- full traceability
+* Determines which node stores each chunk
+* Uses consistent hashing
+* No central coordinator required
 
 ---
-## 🗂️ Folder Structure
 
-```plaintext
-secure-decentralized-storage-audit/
+### 3. Data Sovereignty (Jurisdiction Awareness)
+
+* Nodes represent different regions (IN, EU, US)
+* Data can be restricted to a specific region
+
+Example:
+
+```
+Store only in EU → complies with GDPR-like policy
+```
+
+---
+
+### 4. Distributed Metadata (Gossip Protocol)
+
+* File metadata is NOT stored centrally
+* Replicated across nodes using gossip
+* Enables decentralized lookup
+
+---
+
+### 5. Audit Logging (Hash Chain)
+
+* Each node maintains a tamper-evident log
+* Logs include:
+
+  * chunk storage
+  * data access
+* Uses hash chaining for integrity
+
+---
+
+### 6. Data Integrity (Merkle Tree)
+
+* Each file has a Merkle root
+* During download:
+
+  * file is reconstructed
+  * integrity is verified
+* Detects any tampering
+
+---
+
+### 7. Fault Tolerance
+
+* Data is distributed across nodes
+* System continues to work even if one node fails
+
+---
+
+## 📁 Project Structure
+
+```
+decentralized-storage-dht/
+│
+├── README.md
 ├── docker-compose.yml
 │
-├── control_server/
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   ├── main.py
-│   ├── database.py
-│   ├── models.py
-│   ├── schemas.py
-│   ├── auth.py
-│   ├── audit.py
-│   ├── routes_auth.py
-│   ├── routes_nodes.py
-│   ├── routes_files.py
-│   ├── routes_policy.py
-│   ├── routes_audit.py
-│   └── routes_access.py
+├── frontend/
+│   ├── index.html
+│   ├── app.js
+│   ├── style.css
 │
-├── storage_node/
-│   ├── Dockerfile
+├── gateway/                          # lightweight entry point (NOT central brain)
+│   ├── api.py                        # upload/download interface
+│   ├── client.py                     # internal coordinator logic
 │   ├── requirements.txt
-│   └── main.py
+│   ├── Dockerfile
+│
+├── node/                             # peer node (same image for all nodes)
+│   ├── node.py                       # main storage node server
+│   ├── storage.py                    # chunk storage handler
+│   ├── dht.py                        # routing logic (simplified Kademlia-style)
+│   ├── audit.py                      # local audit log
+│   ├── jurisdiction.py               # region simulation (EU/US/IN)
+│   ├── config.py
+│   ├── requirements.txt
+│   ├── Dockerfile
+│
+├── shared/
+│   ├── hashing.py                    # SHA256 utilities
+│   ├── chunker.py                    # file splitting logic
+│   ├── models.py                     # request/response structures
+│
+├── network/
+│   ├── registry.py                   # node discovery (bootstrap list)
+│   ├── gossip.py                     # optional peer sharing simulation
+│
 ```
 
-## 🧩 Database Schema
+---
 
-### Tables
+## 🚀 Setup and Installation
 
-- **users** → user accounts
-- **storage_nodes** → node registry (region, URL)
-- **files** → file metadata
-- **file_chunks** → mapping file → node
-- **policies** → access control rules
-- **audit_logs** → access and operation logs
+### Prerequisites
+
+* Docker
+* Docker Compose
 
 ---
 
-## 🔐 Security Model
-
-- Passwords hashed using **bcrypt**
-- Authentication via **JWT tokens**
-- File data stored as **encrypted blobs**
-- Access controlled using **policy rules**
-- All operations recorded in **audit logs**
-
----
-
-## 📊 Features
-
-### ✅ Implemented
-
-- User registration & login
-- JWT authentication
-- Storage node registration
-- File metadata management
-- Region-aware node selection
-- Access policy creation & update
-- File access control (owner + shared users)
-- Audit logging (success + denied)
-- Multi-node decentralized storage
-
----
-
-## 🚀 How to Run
-
-### 1. Clone repo
+### Step 1: Clone Repository
 
 ```bash
-git clone <your-repo-link>
-cd secure-decentralized-storage-audit
+git clone <your-repo-url>
+cd decentralized-storage-dht
 ```
 
-### Start System
-``` bash
+---
+
+### Step 2: Run System
+
+```bash
 docker-compose up --build
 ```
 
-### Services
+---
 
-| Service        | URL                                            |
-| -------------- | ---------------------------------------------- |
-| Control Server | [http://localhost:8000](http://localhost:8000) |
-| Storage Node 1 | [http://localhost:8001](http://localhost:8001) |
-| Storage Node 2 | [http://localhost:8002](http://localhost:8002) |
-| Storage Node 3 | [http://localhost:8003](http://localhost:8003) |
+### Step 3: Open Frontend
 
-## API Usage
-### Register User
-``` bash
-curl -X POST http://localhost:8000/auth/register \
--H "Content-Type: application/json" \
--d '{"username":"alice","password":"alice123"}'
+Open in browser:
+
+```
+frontend/index.html
 ```
 
-### Login
-``` bash
-curl -X POST http://localhost:8000/auth/login \
--H "Content-Type: application/json" \
--d '{"username":"alice","password":"alice123"}'
+---
+
+### Step 4: API Documentation
+
+```
+http://localhost:8000/docs
 ```
 
-### Register Storage Node
-``` bash
-curl -X POST http://localhost:8000/nodes/register \
--H "Content-Type: application/json" \
--d '{
-  "id": "node-1",
-  "name": "storage-node-1",
-  "region": "india",
-  "url": "http://storage_node_1:8000"
-}'
+---
+
+## 🧪 How to Use (Demo)
+
+### 1. Upload File
+
+* Select file
+* Click Upload
+* System:
+
+  * splits file
+  * distributes chunks across nodes
+  * returns file ID
+
+---
+
+### 2. View Node Distribution
+
+* Click “Refresh Status”
+* See which node stores which chunks
+
+---
+
+### 3. View Audit Logs
+
+* Click “Load Logs”
+* See storage and access logs per node
+
+---
+
+### 4. Download File
+
+* Enter file ID
+* System reconstructs file from distributed chunks
+
+---
+
+### 5. Fault Tolerance Test
+
+* Stop a node:
+
+```bash
+docker stop node2
 ```
 
-### Create File Metadata
-``` bash
-curl -X POST "http://localhost:8000/files/metadata" \
--H "Authorization: Bearer <TOKEN>" \
--H "Content-Type: application/json" \
--d '{"filename":"file.enc","size":100,"checksum":"abc123"}'
+* Try download again
+
+---
+
+## 🧠 How It Works
+
+### Upload Flow
+
+1. File is split into chunks
+2. Each chunk is hashed (SHA-256)
+3. DHT determines target node
+4. Chunk is stored on responsible node
+5. Metadata is distributed via gossip
+
+---
+
+### Download Flow
+
+1. Metadata is retrieved from nodes
+2. Chunks are fetched from distributed nodes
+3. File is reconstructed
+4. Merkle tree verifies integrity
+
+---
+
+## 📊 Example Output
+
+### Node Status
+
+```json
+[
+  {"node_id": "node1", "region": "IN", "stored_chunks": ["a1", "b2"]},
+  {"node_id": "node2", "region": "EU", "stored_chunks": ["c3"]},
+  {"node_id": "node3", "region": "US", "stored_chunks": ["d4"]}
+]
 ```
 
-### Create Policy (Shared file)
-``` bash
-curl -X POST http://localhost:8000/policies \
--H "Authorization: Bearer <TOKEN>" \
--H "Content-Type: application/json" \
--d '{
-  "file_id":"<FILE_ID>",
-  "user_id":"<USER_ID>",
-  "can_read":true
-}'
+---
+
+### Audit Log
+
+```json
+{
+  "event": "STORE",
+  "details": "chunk=a1 stored_at=node1",
+  "prev_hash": "...",
+  "hash": "..."
+}
 ```
 
-### Access File
-``` bash
-curl -X GET http://localhost:8000/access/file/<FILE_ID> \
--H "Authorization: Bearer <TOKEN>"
-```
+---
 
-### View Audit Logs
-``` bash
-curl -X GET http://localhost:8000/audit/file/<FILE_ID> \
--H "Authorization: Bearer <TOKEN>"
-```
+## ⚠️ Limitations
 
-## 🔄 Example Flows
+* Metadata consistency is eventual (gossip-based)
+* No encryption implemented (can be added)
+* Simplified DHT (not full Kademlia)
+* No consensus protocol (e.g., Raft)
 
-- User registers and logs in  
-- Storage nodes are registered  
-- User creates file metadata  
-- File is assigned to a node  
-- Owner shares file via policy  
-- Another user requests access  
-- Access is allowed/denied  
-- Audit log is recorded  
+---
 
+## 🔮 Future Enhancements
 
-## 🏗️ Decentralization Model
+* End-to-end encryption
+* Full Kademlia DHT
+* Blockchain-based audit ledger
+* Smart policy engine (GDPR enforcement)
+* Real-time network visualization
 
-This system follows a **hybrid decentralized architecture**:
+---
 
-- **File data** → decentralized across storage nodes  
-- **Metadata & policies** → centralized control plane  
+## 🎓 Conclusion
 
-### Benefits
+This project demonstrates a **decentralized, compliance-aware storage system** that:
 
-- Scalability  
-- Strong governance  
-- Auditability  
-- Regulatory compliance  
+* removes reliance on centralized cloud providers
+* ensures transparency and traceability
+* supports regulatory requirements
+* provides secure and fault-tolerant storage
+
+---
